@@ -1,0 +1,33 @@
+name: Streamlit Cloud MLOps Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mlops-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install -r week_2_mls/requirements.txt
+
+      - name: Run Data Preparation
+        run: python week_2_mls/model_building/prep.py
+
+      - name: Train and Serialize Model
+        run: python week_2_mls/model_building/train.py
+
+      - name: Commit and Push Updated Model to GitHub
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add week_2_mls/deployment/best_machine_failure_model_v1.joblib
+          git diff-index --quiet HEAD || git commit -m "Automated MLOps Model Update [skip ci]"
+          git push
